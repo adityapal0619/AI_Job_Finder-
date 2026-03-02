@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24h Job Finder</title>
+    <script src="/_sdk/element_sdk.js"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #020617;
+            overflow-x: hidden;
+        }
+
+        .app-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .word {
+            opacity: 0;
+            transform: translateY(20px);
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .word.show {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease;
+        }
+
+        .glow {
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+        }
+
+        .fade-up {
+            animation: fadeUp 1.2s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #22d3ee, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 255, 255, 0.15);
+        }
+
+        .typing-cursor {
+            display: inline-block;
+            width: 3px;
+            height: 1em;
+            background: #22d3ee;
+            margin-left: 4px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes glow-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes slide-in-left {
+            from {
+                opacity: 0;
+                transform: translateX(-60px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slide-in-right {
+            from {
+                opacity: 0;
+                transform: translateX(60px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes bounce-in {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes rotate-360 {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(14deg);
+            }
+
+            75% {
+                transform: rotate(-14deg);
+            }
+        }
+
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(156, 163, 175, 0.7);
+        }
+
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .glow-pulse-button {
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+
+        .shimmer-effect {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            background-size: 1000px 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        .slide-in-left-anim {
+            animation: slide-in-left 0.8s ease forwards;
+        }
+
+        .slide-in-right-anim {
+            animation: slide-in-right 0.8s ease forwards;
+        }
+
+        .bounce-in-anim {
+            animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .rotate-spin {
+            animation: rotate-360 20s linear infinite;
+        }
+
+        .wave-hand {
+            animation: wave 1s ease-in-out;
+        }
+
+        .gradient-animated {
+            background-size: 200% 200%;
+            animation: gradient-shift 6s ease infinite;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #22d3ee, #60a5fa);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #22d3ee;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .success-toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 1000;
+        }
+
+        .success-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .mode-button {
+            transition: all 0.3s ease;
+        }
+
+        .mode-button.active {
+            background: rgba(6, 182, 212, 0.2);
+            border-color: #06b6d4;
+            color: #22d3ee;
+        }
+
+        .mode-button.inactive {
+            background: rgba(75, 85, 99, 0.2);
+            border-color: #4b5563;
+            color: #9ca3af;
+        }
+
+        .upload-zone {
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: #06b6d4;
+        }
+
+        .file-preview {
+            display: none;
+        }
+
+        .file-preview.show {
+            display: flex;
+        }
+    </style>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+    </style>
+    <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+</head>
+
+<body class="h-full">
+    <div class="app-wrapper"><!-- Background Canvas -->
+        <canvas id="bg"></canvas><!-- Navbar -->
+        <nav class="flex justify-between items-center px-6 md:px-10 py-6 text-white">
+            <h1 class="text-xl font-semibold flex items-center gap-2"><span class="text-2xl">💼</span> <span
+                    id="nav-brand">24h Job Finder</span></h1>
+            <div class="hidden md:flex space-x-8 text-gray-300"><a href="#how-it-works" class="nav-link">How it
+                    works</a> <a href="#features" class="nav-link">Features</a> <a href="#form" class="nav-link">Get
+                    Started</a>
+            </div><button class="md:hidden text-2xl" onclick="toggleMobileMenu()">☰</button>
+        </nav><!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden glass mx-6 rounded-xl p-4 text-white space-y-4"><a
+                href="#how-it-works" class="block py-2 px-4 hover:bg-white/10 rounded-lg">How it works</a> <a
+                href="#features" class="block py-2 px-4 hover:bg-white/10 rounded-lg">Features</a> <a href="#form"
+                class="block py-2 px-4 hover:bg-white/10 rounded-lg">Get Started</a>
+        </div><!-- HERO Section -->
+        <section class="text-center text-white mt-12 md:mt-20 px-6 fade-up">
+            <p id="tagline" class="text-cyan-400 mb-5 text-sm md:text-base tracking-wide slide-in-left-anim">⚡ POWERED
+                BY AI — REAL TIME JOB SEARCH</p>
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight"><span id="hero-title"
+                    class="slide-in-left-anim inline-block">Find Jobs in the</span> <span id="animatedText"
+                    class="gradient-text inline-block ml-2 md:ml-3 bounce-in-anim"></span> <span
+                    class="typing-cursor"></span></h1>
+            <p id="hero-description"
+                class="mt-6 text-gray-400 max-w-xl mx-auto text-base md:text-lg slide-in-right-anim">Find and append
+                recent job postings to your Google Sheet — automatically matched to your skills and experience.</p>
+            <button id="cta-button" onclick="window.location.href='signin.html'"
+                class="mt-10 px-8 py-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 transition glow font-semibold text-lg glow-pulse-button float-animation">
+                Get Started — It's Free → </button>
+        </section><!-- How It Works Section -->
+        <section id="how-it-works" class="mt-32 px-6">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-4 fade-up">How It Works</h2>
+                <p class="text-gray-400 text-center mb-16 max-w-2xl mx-auto fade-up">Get matched with your dream job in
+                    three simple steps</p>
+                <div class="grid md:grid-cols-3 gap-8 cursor-pointer">
+                    <div class="glass rounded-2xl p-8 text-center feature-card bounce-in-anim"
+                        style="animation-delay: 0.1s;">
+                        <div
+                            class="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-3xl float-animation">
+                            📄
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">1. Paste Your Resume</h3>
+                        <p class="text-gray-400">Share your skills and experience so our AI can understand your profile
+                        </p>
+                    </div>
+                    <div class="glass rounded-2xl p-8 text-center feature-card bounce-in-anim"
+                        style="animation-delay: 0.2s;">
+                        <div
+                            class="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-3xl rotate-spin">
+                            🤖
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">2. AI Matches Jobs</h3>
+                        <p class="text-gray-400">Our AI scans thousands of listings and finds the best matches for you
+                        </p>
+                    </div>
+                    <div class="glass rounded-2xl p-8 text-center feature-card bounce-in-anim"
+                        style="animation-delay: 0.3s;">
+                        <div
+                            class="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-3xl float-animation">
+                            📊
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">3. Export to Sheets</h3>
+                        <p class="text-gray-400">Get all matched jobs automatically added to your Google Sheet</p>
+                    </div>
+                </div>
+            </div>
+        </section><!-- Features Section -->
+        <section id="features" class="mt-32 px-6">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-4 fade-up">Powerful Features</h2>
+                <p class="text-gray-400 text-center mb-16 max-w-2xl mx-auto fade-up">Everything you need to supercharge
+                    your job search</p>
+                <div class="grid md:grid-cols-2 gap-6 cursor-pointer
+">
+                    <div class="glass rounded-2xl p-6 flex items-start gap-4 feature-card bounce-in-anim"
+                        style="animation-delay: 0.05s;">
+                        <div class="text-3xl">
+                            ⚡
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Real-Time Scanning</h3>
+                            <p class="text-gray-400 text-sm">Jobs are updated every 24 hours from multiple sources</p>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 flex items-start gap-4 feature-card bounce-in-anim"
+                        style="animation-delay: 0.1s;">
+                        <div class="text-3xl">
+                            🎯
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Smart Matching</h3>
+                            <p class="text-gray-400 text-sm">AI analyzes your skills to find the perfect fit</p>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 flex items-start gap-4 feature-card bounce-in-anim"
+                        style="animation-delay: 0.15s;">
+                        <div class="text-3xl">
+                            🔒
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Privacy First</h3>
+                            <p class="text-gray-400 text-sm">Your data is never stored or shared with third parties</p>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 flex items-start gap-4 feature-card bounce-in-anim"
+                        style="animation-delay: 0.2s;">
+                        <div class="text-3xl">
+                            🌍
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Global Coverage</h3>
+                            <p class="text-gray-400 text-sm">Find remote and local jobs from around the world</p>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 flex items-start gap-4 feature-card bounce-in-anim"
+                        style="animation-delay: 0.25s;">
+                        <div class="text-3xl">
+                            💼
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Easy Integration</h3>
+                            <p class="text-gray-400 text-sm">Seamlessly integrates with your Google Sheets in seconds
+                            </p>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 flex items-start gap-4 feature-card bounce-in-anim"
+                        style="animation-delay: 0.3s;">
+                        <div class="text-3xl">
+                            ⚙️
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Fully Customizable</h3>
+                            <p class="text-gray-400 text-sm">Filter and customize job preferences exactly how you want
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section><!-- FORM Section -->
+        <section id="form" class="mt-32 flex justify-center px-6 pb-20">
+            <div class="glass rounded-2xl p-8 md:p-10 w-full max-w-2xl text-white fade-up slide-in-right-anim">
+                <h2 id="form-title" class="text-2xl md:text-3xl font-semibold mb-2 gradient-animated">Configure Your Job
+                    Search</h2>
+                <p class="text-gray-400 mb-8">Fill in the details below to start finding your perfect job</p>
+                <form id="job-search-form" class="space-y-5">
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-3">Your Resume / Profile</label>
+                        <div class="flex gap-3 mb-4">
+                            <button type="button" onclick="switchResumeMode('paste')"
+                                class="mode-button active flex-1 px-4 py-2 rounded-lg border font-medium transition">📝
+                                Paste</button> <button type="button" onclick="switchResumeMode('upload')"
+                                class="mode-button inactive flex-1 px-4 py-2 rounded-lg border font-medium transition">📤
+                                Upload</button>
+                        </div>
+                        <div id="paste-mode">
+                            <textarea id="resume"
+                                placeholder="Paste your resume, LinkedIn summary, or describe your skills..."
+                                class="w-full p-4 rounded-xl bg-white/5 border border-gray-600 focus:border-cyan-500 focus:outline-none transition min-h-[150px] resize-none"></textarea>
+                        </div>
+                        <div id="upload-mode" style="display: none;">
+                            <div class="upload-zone border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-cyan-500"
+                                onclick="document.getElementById('resume-file').click()">
+                                <input type="file" id="resume-file" accept=".pdf,.doc,.docx,.txt" style="display: none;"
+                                    onchange="handleFileUpload(event)">
+                                <div class="text-4xl mb-3">
+                                    📄
+                                </div>
+                                <p class="text-gray-300 font-medium">Click to upload or drag and drop</p>
+                                <p class="text-xs text-gray-500 mt-2">PDF, DOC, DOCX, or TXT (max 5MB)</p>
+                            </div>
+                            <div id="file-preview"
+                                class="file-preview mt-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 items-center gap-3">
+                                <span class="text-xl">✓</span>
+                                <div>
+                                    <p class="font-medium text-sm" id="file-name"></p>
+                                    <p class="text-xs text-green-300" id="file-size"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div><label class="block text-sm text-gray-300 mb-2">Job Preferences (Optional)</label> <input
+                            type="text" id="preferences" placeholder="e.g., Remote, Senior, React, $100k+"
+                            class="w-full p-4 rounded-xl bg-white/5 border border-gray-600 focus:border-cyan-500 focus:outline-none transition">
+                    </div><button type="submit" id="submit-btn"
+                        class="w-full mt-6 bg-gradient-to-r from-cyan-500 to-blue-500 py-4 rounded-xl hover:from-cyan-400 hover:to-blue-400 transition glow font-semibold text-lg flex items-center justify-center gap-2">
+                        <span>🚀</span> <span>Start AI Job Search</span> </button>
+                </form>
+            </div>
+        </section><!-- Footer -->
+        <footer class="text-center py-10 text-gray-500 border-t border-gray-800">
+            <p>Made with ❤️ by 24h Job Finder • <span class="text-cyan-400">Powered by AI</span></p>
+        </footer>
+    </div><!-- Success Toast -->
+    <div id="success-toast" class="success-toast">
+        ✅ Job search started! Check your Google Sheet soon.
+    </div>
+    <script>
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            window.location.href = "signin.html";
+        }
+        const defaultConfig = {
+            tagline: "⚡ POWERED BY AI — REAL TIME JOB SEARCH",
+            hero_title: "Find Jobs in the",
+            hero_description: "Find and append recent job postings to your Google Sheet — automatically matched to your skills and experience.",
+            cta_button_text: "Get Started — It's Free →",
+            form_title: "Configure Your Job Search",
+            primary_color: "#06b6d4",
+            secondary_color: "#3b82f6",
+            background_color: "#020617",
+            text_color: "#ffffff",
+            muted_color: "#9ca3af",
+            font_family: "Poppins"
+        };
+
+        function onConfigChange(config) {
+            const tagline = config.tagline || defaultConfig.tagline;
+            const heroTitle = config.hero_title || defaultConfig.hero_title;
+            const heroDescription = config.hero_description || defaultConfig.hero_description;
+            const ctaButtonText = config.cta_button_text || defaultConfig.cta_button_text;
+            const formTitle = config.form_title || defaultConfig.form_title;
+            const fontFamily = config.font_family || defaultConfig.font_family;
+
+            document.getElementById('tagline').textContent = tagline;
+            document.getElementById('hero-title').textContent = heroTitle;
+            document.getElementById('hero-description').textContent = heroDescription;
+            document.getElementById('cta-button').textContent = ctaButtonText;
+            document.getElementById('form-title').textContent = formTitle;
+
+            document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [
+                    {
+                        get: () => config.background_color || defaultConfig.background_color,
+                        set: (value) => {
+                            config.background_color = value;
+                            window.elementSdk.setConfig({ background_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.primary_color || defaultConfig.primary_color,
+                        set: (value) => {
+                            config.primary_color = value;
+                            window.elementSdk.setConfig({ primary_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.text_color || defaultConfig.text_color,
+                        set: (value) => {
+                            config.text_color = value;
+                            window.elementSdk.setConfig({ text_color: value });
+                        }
+                    }
+                ],
+                borderables: [],
+                fontEditable: {
+                    get: () => config.font_family || defaultConfig.font_family,
+                    set: (value) => {
+                        config.font_family = value;
+                        window.elementSdk.setConfig({ font_family: value });
+                    }
+                },
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["tagline", config.tagline || defaultConfig.tagline],
+                ["hero_title", config.hero_title || defaultConfig.hero_title],
+                ["hero_description", config.hero_description || defaultConfig.hero_description],
+                ["cta_button_text", config.cta_button_text || defaultConfig.cta_button_text],
+                ["form_title", config.form_title || defaultConfig.form_title]
+            ]);
+        }
+
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities,
+                mapToEditPanelValues
+            });
+        }
+
+        // Resume mode management
+        let currentResumeMode = 'paste';
+        let uploadedFileContent = '';
+
+        function switchResumeMode(mode) {
+            currentResumeMode = mode;
+            const pasteMode = document.getElementById('paste-mode');
+            const uploadMode = document.getElementById('upload-mode');
+            const buttons = document.querySelectorAll('.mode-button');
+
+            if (mode === 'paste') {
+                pasteMode.style.display = 'block';
+                uploadMode.style.display = 'none';
+                buttons[0].classList.add('active');
+                buttons[0].classList.remove('inactive');
+                buttons[1].classList.add('inactive');
+                buttons[1].classList.remove('active');
+            } else {
+                uploadMode.style.display = 'block';
+                pasteMode.style.display = 'none';
+                buttons[1].classList.add('active');
+                buttons[1].classList.remove('inactive');
+                buttons[0].classList.add('inactive');
+                buttons[0].classList.remove('active');
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                uploadedFileContent = e.target.result;
+                const preview = document.getElementById('file-preview');
+                document.getElementById('file-name').textContent = file.name;
+                document.getElementById('file-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
+                preview.classList.add('show');
+            };
+            reader.readAsText(file);
+        }
+
+        // Particle Background
+        const canvas = document.getElementById("bg");
+        const ctx = canvas.getContext("2d");
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener("resize", resize);
+
+        let particles = [];
+        for (let i = 0; i < 100; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 2 + 0.5,
+                dx: (Math.random() - 0.5) * 0.4,
+                dy: (Math.random() - 0.5) * 0.4,
+                opacity: Math.random() * 0.5 + 0.3
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(34, 211, 238, ${p.opacity})`;
+                ctx.fill();
+
+                p.x += p.dx;
+                p.y += p.dy;
+
+                if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+            });
+
+            particles.forEach((p1, i) => {
+                particles.slice(i + 1).forEach(p2 => {
+                    const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(34, 211, 238, ${0.1 * (1 - dist / 120)})`;
+                        ctx.stroke();
+                    }
+                });
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Text Animation
+        const phrases = [
+            ["Last", "24", "Hours"],
+            ["24", "Hour", "Jobs"],
+            ["Fresh", "Jobs", "Today"],
+            ["Job", "24"],
+            ["24h", "Opportunities"]
+        ];
+
+        let phraseIndex = 0;
+        const animatedText = document.getElementById("animatedText");
+
+        function typePhrase() {
+            const phrase = phrases[phraseIndex];
+            let wordIndex = 0;
+            animatedText.textContent = "";
+            animatedText.classList.remove('bounce-in-anim');
+            setTimeout(() => animatedText.classList.add('bounce-in-anim'), 10);
+
+            function typeNextWord() {
+                if (wordIndex < phrase.length) {
+                    const word = phrase[wordIndex];
+                    let charIndex = 0;
+
+                    const typeInterval = setInterval(() => {
+                        if (charIndex < word.length) {
+                            animatedText.textContent += word[charIndex];
+                            charIndex++;
+                        } else {
+                            clearInterval(typeInterval);
+                            animatedText.textContent += " ";
+                            wordIndex++;
+                            setTimeout(typeNextWord, 300);
+                        }
+                    }, 80);
+                } else {
+                    setTimeout(erasePhrase, 2000);
+                }
+            }
+
+            typeNextWord();
+        }
+
+        function erasePhrase() {
+            const eraseInterval = setInterval(() => {
+                if (animatedText.textContent.length > 0) {
+                    animatedText.textContent = animatedText.textContent.slice(0, -1);
+                } else {
+                    clearInterval(eraseInterval);
+                    phraseIndex = (phraseIndex + 1) % phrases.length;
+                    setTimeout(typePhrase, 300);
+                }
+            }, 40);
+        }
+
+        typePhrase();
+
+        // Scroll Function
+        function scrollToForm() {
+            document.getElementById('form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Form Submission
+        document.getElementById('job-search-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Please login first.");
+                window.location.href = "signin.html";
+                return;
+            }
+
+            const formData = new FormData();
+
+            // ✅ Always check file
+            const fileInput = document.getElementById('resume-file');
+            if (fileInput.files[0]) {
+                formData.append("resume", fileInput.files[0]);
+                formData.append("title", fileInput.files[0].name);
+            }
+
+            // ✅ Always check textarea
+            const resumeText = document.getElementById('resume').value;
+            if (resumeText.trim()) {
+                formData.append("resumeText", resumeText);
+            }
+
+            // ❌ If nothing provided
+            if (!fileInput.files[0] && !resumeText.trim()) {
+                alert("Please upload or paste resume.");
+                return;
+            }
+
+            // Preferences
+            const preferences = document.getElementById("preferences").value;
+            if (preferences.trim()) {
+                formData.append("preferences", preferences);
+            }
+
+            try {
+                const response = await fetch("http://localhost:5000/api/resume/upload", {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Upload failed");
+                }
+
+                const toast = document.getElementById('success-toast');
+                toast.textContent = "✅ Resume uploaded successfully!";
+                toast.classList.add('show');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 4000);
+
+                this.reset();
+                document.getElementById('file-preview').classList.remove('show');
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message || "Server error");
+            }
+        });
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('mobile-menu').style.display = 'none';
+                }
+            });
+        });
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9d280b8ff61f3966',t:'MTc3MTg2MzU3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9d37dfc2d7c48030',t:'MTc3MjAyOTU0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>
